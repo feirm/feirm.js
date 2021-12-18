@@ -13,5 +13,8 @@
   "bugs": {
     "url": "https://github.com/feirm/feirm.js/issues"
   },
-  "homepage": "https://github.com/feirm/feirm.js#readme"
+  "homepage": "https://github.com/feirm/feirm.js#readme",
+  "devDependencies": {
+    "typescript": "^4.5.4"
+  }
 }
