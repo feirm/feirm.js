@@ -1,3 +1,9 @@
+// Key types
+enum Keys {
+    ENCRYPTION = "enc",
+    IDENTITY = "identity",
+}
+
 interface EncryptedKey {
     key: string;
     signature: string;
@@ -5,4 +11,7 @@ interface EncryptedKey {
     salt: string;
 }
 
-export { EncryptedKey }
+export { 
+    Keys,
+    EncryptedKey
+}
