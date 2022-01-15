@@ -1,6 +1,6 @@
 {
   "name": "feirm.js",
-  "version": "0.1.0",
+  "private": true,
   "description": "General purpose library for all Feirm Platform encryption",
   "main": "index.js",
   "scripts": {
@@ -15,6 +15,10 @@
   },
   "homepage": "https://github.com/feirm/feirm.js#readme",
   "devDependencies": {
+    "lerna": "^4.0.0",
     "typescript": "^4.5.4"
-  }
+  },
+  "workspaces": [
+    "packages/*"
+  ]
 }
