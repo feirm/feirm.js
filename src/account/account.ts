@@ -36,6 +36,23 @@ class Account {
     }
 
     /**
+     * Derive an AES-CBC encryption key
+     * @param key 
+     * @returns {CryptoKey}
+     */
+    private async deriveAesEncryptionKey(key: ArrayBuffer): Promise<CryptoKey> {
+        const encryptionKey = await window.crypto.subtle.importKey(
+            "raw",
+            key,
+            { name: "AES-CBC" },
+            false,
+            ["encrypt", "decrypt"]
+        );
+
+        return Promise.resolve(encryptionKey);
+    }
+
+    /**
      * Return an encrypted object of the account root key
      * @param password 
      * @returns {EncryptedKey}
@@ -65,13 +82,7 @@ class Account {
         });
 
         // Derive an encryption key using our stretched key to encrypt the root key with
-        const encryptionKey = await window.crypto.subtle.importKey(
-            "raw",
-            stretchedKey.hash,
-            { name: "AES-CBC" },
-            false,
-            ["encrypt", "decrypt"]
-        );
+        const encryptionKey = await this.deriveAesEncryptionKey(stretchedKey.hash);
 
         // Encrypt the root key
         const ciphertext = await window.crypto.subtle.encrypt(
