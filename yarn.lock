@@ -2,6 +2,16 @@
 # yarn lockfile v1
 
 
+"@types/argon2-browser@^1.18.1":
+  version "1.18.1"
+  resolved "https://registry.yarnpkg.com/@types/argon2-browser/-/argon2-browser-1.18.1.tgz#39bc2bf2fbe86d4854005730ace3b8015758adfb"
+  integrity sha512-PZffP/CqH9m2kovDSRQMfMMxUC3V98I7i7/caa0RB0/nvsXzYbL9bKyqZpNMFmLFGZslROlG1R60ONt7abrwlA==
+
+argon2-browser@^1.18.0:
+  version "1.18.0"
+  resolved "https://registry.yarnpkg.com/argon2-browser/-/argon2-browser-1.18.0.tgz#f35820211e0a431aed7f82b9348477234be69bec"
+  integrity sha512-ImVAGIItnFnvET1exhsQB7apRztcoC5TnlSqernMJDUjbc/DLq3UEYeXFrLPrlaIl8cVfwnXb6wX2KpFf2zxHw==
+
 typescript@^4.5.4:
   version "4.5.4"
   resolved "https://registry.yarnpkg.com/typescript/-/typescript-4.5.4.tgz#a17d3a0263bf5c8723b9c52f43c5084edf13c2e8"
