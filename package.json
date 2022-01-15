@@ -1,5 +1,6 @@
 {
   "name": "feirm.js",
+  "version": "0.0.1",
   "private": true,
   "description": "General purpose library for all Feirm Platform encryption",
   "main": "index.js",
