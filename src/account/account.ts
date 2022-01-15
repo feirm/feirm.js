@@ -32,9 +32,15 @@ class Account {
         return undefined;
     }
 
+    /**
+     * Return an encrypted object of the account root key
+     * @param password 
+     * @returns {EncryptedKey}
+     */
     async encryptRootKey(password: string): Promise<EncryptedKey> {
         // Check if root key is present in memory
-        if (!this.rootKey) {
+        const rootKey = this.getRootKey();
+        if (!rootKey) {
             Promise.reject("Account root key is not set!")
         }
 
@@ -47,7 +53,7 @@ class Account {
         const salt = window.crypto.getRandomValues(new Uint8Array(16));
         const iv = window.crypto.getRandomValues(new Uint8Array(16));
 
-        // Stretch password parameter into a stronger key
+        // Stretch password into a stronger key
         const stretchedKey = await hash({
             pass: password,
             salt: salt,
@@ -55,11 +61,27 @@ class Account {
             hashLen: 32
         });
 
+        // Derive an encryption key using our stretched key to encrypt the root key with
+        const encryptionKey = await window.crypto.subtle.importKey(
+            "raw",
+            stretchedKey.hash,
+            { name: "AES-CBC" },
+            false,
+            ["encrypt", "decrypt"]
+        );
+
+        // Encrypt the root key
+        const ciphertext = await window.crypto.subtle.encrypt(
+            { name: "AES-CBC", iv: iv },
+            encryptionKey,
+            rootKey!
+        )
+
         const encryptedKey: EncryptedKey = {
-            key: stretchedKey.hash.toString(),
+            key: Buffer.from(ciphertext).toString("hex"),
             signature: "0x",
-            iv: iv.toString(),
-            salt: salt.toString()
+            iv: Buffer.from(iv).toString("hex"),
+            salt: Buffer.from(salt).toString("hex")
         }
 
         return Promise.resolve(encryptedKey);
