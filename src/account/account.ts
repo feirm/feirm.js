@@ -144,7 +144,7 @@ class Account {
                 Buffer.from(account.encrypted_key.key)
             );
 
-            return Promise.resolve(rootKey);
+            return Promise.resolve(new Uint8Array(rootKey));
         } catch (e) {
             return Promise.reject("Password is incorrect, please try again!");
         }
