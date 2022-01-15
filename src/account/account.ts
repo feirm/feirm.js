@@ -1,8 +1,10 @@
 import { ArgonType, hash } from "argon2-browser"
-import { eddsa } from "elliptic";
 import keccak256 from "keccak256";
+import { ec, eddsa } from "elliptic";
 
-import { EncryptedKey, Keys } from "./interfaces";
+const ed25519 = new eddsa("ed25519");
+
+import { EncryptedAccount, EncryptedKey, Keys } from "./interfaces";
 
 class Account {
     private rootKey: Uint8Array;
@@ -105,6 +107,49 @@ class Account {
         return Promise.resolve(encryptedKey);
     }
 
+    async decryptRootKey(password: string, account: EncryptedAccount): Promise<Uint8Array> {
+        // First it would be beneficial to verify the signature
+        // of the encrypted payload to check it hasn't been
+        // tampered with server-side or in transport.
+        const publicKey = ed25519.keyFromPublic(account.identity_publickey);
+        const rootKeyHash = keccak256(account.encrypted_key.key);
+        const validSignature = publicKey.verify(rootKeyHash, account.encrypted_key.signature);
+
+        if (!validSignature) {
+            return Promise.reject("Root key signature is invalid! Check that payload has not been tampered with.");
+        }
+
+        // Convert the Salt and IV back into byte form
+        const saltBytes = new Uint8Array();
+        new TextEncoder().encodeInto(account.encrypted_key.salt, saltBytes);
+
+        const ivBytes = new Uint8Array();
+        new TextEncoder().encodeInto(account.encrypted_key.iv, ivBytes);
+
+        // Derive stretched Argon2 key from password
+        const stretchedKey = await hash({
+            pass: password,
+            salt: saltBytes,
+            type: ArgonType.Argon2id,
+            hashLen: 32
+        });
+
+        // Derive the AES encryption key and decrypt the ciphertext to extract our Root Key
+        const encryptionKey = await this.deriveAesEncryptionKey(stretchedKey.hash);
+
+        try {
+            const rootKey = await window.crypto.subtle.decrypt(
+                { name: "AES-CBC", iv: ivBytes },
+                encryptionKey,
+                Buffer.from(account.encrypted_key.key)
+            );
+
+            return Promise.resolve(rootKey);
+        } catch (e) {
+            return Promise.reject("Password is incorrect, please try again!");
+        }
+    }
+
     /* Root Key Methods (Keypairs) */
 
     /**
@@ -124,7 +169,6 @@ class Account {
         const secretKey = await window.crypto.subtle.digest("SHA-256", concatenatedKey);
 
         // Derive the identity EdDSA keypair from the secret
-        const ed25519 = new eddsa("ed25519");
         const keypair = ed25519.keyFromSecret(Buffer.from(secretKey));
 
         return Promise.resolve(keypair);
