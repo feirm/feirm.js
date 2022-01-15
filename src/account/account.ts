@@ -57,3 +57,5 @@ class Account {
         Promise.resolve(stretchedKey);
     }
 }
+
+export default Account;
