@@ -1,4 +1,5 @@
 import { ArgonType, hash } from "argon2-browser"
+import { EncryptedKey } from "./interfaces";
 
 class Account {
     private rootKey: Uint8Array;
@@ -31,7 +32,7 @@ class Account {
         return undefined;
     }
 
-    async encryptRootKey(password: string): Promise<any> {
+    async encryptRootKey(password: string): Promise<EncryptedKey> {
         // Check if root key is present in memory
         if (!this.rootKey) {
             Promise.reject("Account root key is not set!")
@@ -54,7 +55,14 @@ class Account {
             hashLen: 32
         });
 
-        Promise.resolve(stretchedKey);
+        const encryptedKey: EncryptedKey = {
+            key: stretchedKey.hash.toString(),
+            signature: "0x",
+            iv: iv.toString(),
+            salt: salt.toString()
+        }
+
+        return Promise.resolve(encryptedKey);
     }
 }
 
