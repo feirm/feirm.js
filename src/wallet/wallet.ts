@@ -48,4 +48,21 @@ abstract class Wallet {
         
         return mnemonic;
     }
+
+    /**
+     * Add an additional passphrase to BIP39 mnemonic
+     * @param passphrase - An additional word (passphrase) to act as the 25th word
+     */
+    addPassphrase(passphrase: string): Promise<void> {
+        // Check for mnemonic and validate it first
+        if (this.mnemonic && !this.validMnemonic(this.mnemonic)) {
+            return Promise.reject("Mnemonic is invalid!");
+        }
+
+        // Override the existing mnemonic to bypass validation of BIP39 library
+        const mnemonic = `${this.mnemonic} ${passphrase}`;
+        this.mnemonic = mnemonic;
+
+        return Promise.resolve();
+    }
 }
