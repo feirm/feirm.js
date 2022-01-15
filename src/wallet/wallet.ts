@@ -1,6 +1,6 @@
-import bip39 from "bip39";
+import { entropyToMnemonic, validateMnemonic } from "bip39";
 
-abstract class Wallet {
+class Wallet {
     private mnemonic: string; // BIP39 mnemonic
 
     /**
@@ -19,7 +19,7 @@ abstract class Wallet {
      * @returns {boolean}
      */
     validMnemonic(mnemonic: string): boolean {
-        const valid = bip39.validateMnemonic(mnemonic);
+        const valid = validateMnemonic(mnemonic);
         return valid;
     }
 
@@ -44,7 +44,7 @@ abstract class Wallet {
     generateMnemonic(): string {
         // Generate some secure entropy and use it to create a 24 word mnemonic
         const entropy = window.crypto.getRandomValues(new Uint8Array(32));
-        const mnemonic = bip39.entropyToMnemonic(Buffer.from(entropy));
+        const mnemonic = entropyToMnemonic(Buffer.from(entropy));
         
         return mnemonic;
     }
@@ -65,4 +65,8 @@ abstract class Wallet {
 
         return Promise.resolve();
     }
+}
+
+export {
+    Wallet
 }
