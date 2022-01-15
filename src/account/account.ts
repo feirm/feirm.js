@@ -1,5 +1,8 @@
 import { ArgonType, hash } from "argon2-browser"
-import { EncryptedKey } from "./interfaces";
+import { eddsa } from "elliptic";
+import keccak256 from "keccak256";
+
+import { EncryptedKey, Keys } from "./interfaces";
 
 class Account {
     private rootKey: Uint8Array;
@@ -77,14 +80,60 @@ class Account {
             rootKey!
         )
 
+        // Generate a signature for the encrypted ciphertext
+        const keypair = await this.deriveIdentityKeypair();
+        const signature = await this.signData(keypair, Buffer.from(ciphertext).toString("hex"));
+
         const encryptedKey: EncryptedKey = {
             key: Buffer.from(ciphertext).toString("hex"),
-            signature: "0x",
+            signature: signature,
             iv: Buffer.from(iv).toString("hex"),
             salt: Buffer.from(salt).toString("hex")
         }
 
         return Promise.resolve(encryptedKey);
+    }
+
+    /* Root Key Methods (Keypairs) */
+
+    /**
+     * Returns an identity keypair (EdDSA) to sign data
+     * @returns {eddsa.KeyPair}
+     */
+    async deriveIdentityKeypair(): Promise<eddsa.KeyPair> {
+        // Check if root key is present in memory
+        const rootKey = this.getRootKey();
+        if (!rootKey) {
+            Promise.reject("Account root key is not set!")
+        }
+
+        // Key is constructed by SHA-256 hashing rootKey + keyType
+        const keyType = new TextEncoder().encode(Keys.IDENTITY);
+        const concatenatedKey = new Uint8Array([...rootKey!, ...keyType]);
+        const secretKey = await window.crypto.subtle.digest("SHA-256", concatenatedKey);
+
+        // Derive the identity EdDSA keypair from the secret
+        const ed25519 = new eddsa("ed25519");
+        const keypair = ed25519.keyFromSecret(Buffer.from(secretKey));
+
+        return Promise.resolve(keypair);
+    }
+
+    /**
+     * 
+     * @param keypair - Account identity keypair
+     * @param data - String data to be signed using Keccak256
+     * @returns {string} - Hex-encoded signature
+     */
+    signData(keypair: eddsa.KeyPair, data: string): Promise<string> {
+        // Convert the data into bytes and generate a Keccak256 hash of it
+        const dataBytes = new TextEncoder().encode(data);
+        const dataHash = keccak256(Buffer.from(dataBytes));
+
+        // Generate the signature using keypair provided as parameter
+        const signature = keypair.sign(dataHash).toHex().toLowerCase();
+        
+        return Promise.resolve(signature)
     }
 }
 
