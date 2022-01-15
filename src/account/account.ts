@@ -190,6 +190,25 @@ class Account {
         
         return Promise.resolve(signature)
     }
+
+    /**
+     * Return a constructed object of a user account ready for API submission
+     * @param username - Feirm account username
+     * @param email - Feirm account email address
+     * @param keypair - Root key identity keypair
+     * @param encryptedKey - Encrypted root key
+     * @returns 
+     */
+    async createEncryptedAccount(username: string, email: string, keypair: eddsa.KeyPair, encryptedKey: EncryptedKey): Promise<EncryptedAccount> {
+        const encryptedAccount: EncryptedAccount = {
+            email: email,
+            username: username,
+            identity_publickey: Buffer.from(keypair.getPublic()).toString("hex"),
+            encrypted_key: encryptedKey
+        }
+
+        return Promise.resolve(encryptedAccount);
+    }
 }
 
 export { Account };
