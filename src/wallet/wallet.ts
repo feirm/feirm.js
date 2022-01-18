@@ -1,6 +1,6 @@
 import { entropyToMnemonic, validateMnemonic } from "bip39";
 
-class Wallet {
+abstract class Wallet {
     private mnemonic: string; // BIP39 mnemonic
 
     /**
