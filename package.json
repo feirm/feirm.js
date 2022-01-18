@@ -24,7 +24,6 @@
   },
   "dependencies": {
     "argon2-browser": "^1.18.0",
-    "axios": "^0.24.0",
     "bip39": "^3.0.4",
     "elliptic": "^6.5.4",
     "keccak256": "^1.0.6"
