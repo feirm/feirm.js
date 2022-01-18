@@ -1,6 +1,6 @@
 import { ArgonType, hash } from "argon2-browser"
 import keccak256 from "keccak256";
-import { ec, eddsa } from "elliptic";
+import { eddsa } from "elliptic";
 
 const ed25519 = new eddsa("ed25519");
 
