@@ -96,10 +96,7 @@ class Account {
         )
 
         // Generate a signature for the encrypted ciphertext
-        const keypair = await this.deriveIdentityKeypair();
-        this.identityKeypair = keypair;
         const signature = await this.signData(Buffer.from(ciphertext).toString("hex"));
-
         const encryptedKey: EncryptedKey = {
             key: Buffer.from(ciphertext).toString("hex"),
             signature: signature,
@@ -156,14 +153,14 @@ class Account {
     /* Root Key Methods (Keypairs) */
 
     /**
-     * Returns an identity keypair (EdDSA) to sign data
-     * @returns {eddsa.KeyPair}
+     * Derives and sets the identity keypair for the account
+     * @returns {void}
      */
-    async deriveIdentityKeypair(): Promise<eddsa.KeyPair> {
+    async deriveIdentityKeypair(): Promise<void> {
         // Check if root key is present in memory
         const rootKey = this.getRootKey();
         if (!rootKey) {
-            Promise.reject("Account root key is not set!")
+            return Promise.reject("Account root key is not set!");
         }
 
         // Key is constructed by SHA-256 hashing rootKey + keyType
@@ -171,18 +168,22 @@ class Account {
         const concatenatedKey = new Uint8Array([...rootKey!, ...keyType]);
         const secretKey = await window.crypto.subtle.digest("SHA-256", concatenatedKey);
 
-        // Derive the identity EdDSA keypair from the secret
+        // Derive the identity EdDSA keypair from the secret and set it
         const keypair = ed25519.keyFromSecret(Buffer.from(secretKey));
-
-        return Promise.resolve(keypair);
+        this.identityKeypair = keypair;
     }
 
     /**
-     * Set identity keypair
-     * @param keypair
+     * Gets the account raw identity keypair
+     * @returns {eddsa.KeyPair}
      */
-    setIdentityKeypair(keypair: eddsa.KeyPair) {
-        this.identityKeypair = keypair;
+    async getIdentityKeypair(): Promise<eddsa.KeyPair> {
+        if (this.identityKeypair) {
+            return Promise.resolve(this.identityKeypair)
+        }
+
+        await this.deriveIdentityKeypair();
+        return Promise.resolve(this.identityKeypair);
     }
 
     /**
@@ -190,13 +191,14 @@ class Account {
      * @param data - String data to be signed using Keccak256
      * @returns {string} - Hex-encoded signature
      */
-    signData(data: string): Promise<string> {
+    async signData(data: string): Promise<string> {
         // Convert the data into bytes and generate a Keccak256 hash of it
         const dataBytes = new TextEncoder().encode(data);
         const dataHash = keccak256(Buffer.from(dataBytes));
 
         // Generate the signature using keypair provided as parameter
-        const signature = this.identityKeypair.sign(dataHash).toHex().toLowerCase();
+        const identityKeypair = await this.getIdentityKeypair();
+        const signature = identityKeypair.sign(dataHash).toHex().toLowerCase();
         
         return Promise.resolve(signature)
     }
@@ -210,12 +212,12 @@ class Account {
      * @returns 
      */
     async createEncryptedAccount(username: string, email: string, encryptedKey: EncryptedKey): Promise<EncryptedAccount> {
-        const identityKeypairPublicKey = this.identityKeypair.getPublic();
+        const identityKeypair = await this.getIdentityKeypair();
 
         const encryptedAccount: EncryptedAccount = {
             email: email,
             username: username,
-            identity_publickey: Buffer.from(identityKeypairPublicKey).toString("hex"),
+            identity_publickey: Buffer.from(identityKeypair.getPublic()).toString("hex"),
             encrypted_key: encryptedKey
         }
 
