@@ -4,7 +4,7 @@ import { eddsa } from "elliptic";
 
 const ed25519 = new eddsa("ed25519");
 
-import { EncryptedAccount, EncryptedKey, Keys } from "./interfaces";
+import { EncryptedAccount, EncryptedKey, EphemeralToken, Keys } from "./interfaces";
 
 class Account {
     private rootKey: Uint8Array;
@@ -211,14 +211,21 @@ class Account {
      * @param encryptedKey - Encrypted root key
      * @returns 
      */
-    async createEncryptedAccount(username: string, email: string, encryptedKey: EncryptedKey): Promise<EncryptedAccount> {
+    async createEncryptedAccount(username: string, email: string, encryptedKey: EncryptedKey, token: EphemeralToken): Promise<EncryptedAccount> {
         const identityKeypair = await this.getIdentityKeypair();
+
+        // Sign the provided ephemeral token
+        const tokenSignature = await this.signData(token.nonce!);
 
         const encryptedAccount: EncryptedAccount = {
             email: email,
             username: username,
             identity_publickey: Buffer.from(identityKeypair.getPublic()).toString("hex"),
-            encrypted_key: encryptedKey
+            encrypted_key: encryptedKey,
+            token: {
+                id: token.id,
+                signature: tokenSignature
+            }
         }
 
         return Promise.resolve(encryptedAccount);
