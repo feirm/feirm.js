@@ -8,6 +8,7 @@ import { EncryptedAccount, EncryptedKey, Keys } from "./interfaces";
 
 class Account {
     private rootKey: Uint8Array;
+    private identityKeypair: eddsa.KeyPair;
 
     /**
      * Generate an account root key
@@ -96,7 +97,8 @@ class Account {
 
         // Generate a signature for the encrypted ciphertext
         const keypair = await this.deriveIdentityKeypair();
-        const signature = await this.signData(keypair, Buffer.from(ciphertext).toString("hex"));
+        this.identityKeypair = keypair;
+        const signature = await this.signData(Buffer.from(ciphertext).toString("hex"));
 
         const encryptedKey: EncryptedKey = {
             key: Buffer.from(ciphertext).toString("hex"),
@@ -176,18 +178,25 @@ class Account {
     }
 
     /**
+     * Set identity keypair
+     * @param keypair
+     */
+    setIdentityKeypair(keypair: eddsa.KeyPair) {
+        this.identityKeypair = keypair;
+    }
+
+    /**
      * 
-     * @param keypair - Account identity keypair
      * @param data - String data to be signed using Keccak256
      * @returns {string} - Hex-encoded signature
      */
-    signData(keypair: eddsa.KeyPair, data: string): Promise<string> {
+    signData(data: string): Promise<string> {
         // Convert the data into bytes and generate a Keccak256 hash of it
         const dataBytes = new TextEncoder().encode(data);
         const dataHash = keccak256(Buffer.from(dataBytes));
 
         // Generate the signature using keypair provided as parameter
-        const signature = keypair.sign(dataHash).toHex().toLowerCase();
+        const signature = this.identityKeypair.sign(dataHash).toHex().toLowerCase();
         
         return Promise.resolve(signature)
     }
@@ -200,11 +209,13 @@ class Account {
      * @param encryptedKey - Encrypted root key
      * @returns 
      */
-    async createEncryptedAccount(username: string, email: string, keypair: eddsa.KeyPair, encryptedKey: EncryptedKey): Promise<EncryptedAccount> {
+    async createEncryptedAccount(username: string, email: string, encryptedKey: EncryptedKey): Promise<EncryptedAccount> {
+        const identityKeypairPublicKey = this.identityKeypair.getPublic();
+
         const encryptedAccount: EncryptedAccount = {
             email: email,
             username: username,
-            identity_publickey: Buffer.from(keypair.getPublic()).toString("hex"),
+            identity_publickey: Buffer.from(identityKeypairPublicKey).toString("hex"),
             encrypted_key: encryptedKey
         }
 
