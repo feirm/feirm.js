@@ -207,8 +207,8 @@ class Account {
      * Return a constructed object of a user account ready for API submission
      * @param username - Feirm account username
      * @param email - Feirm account email address
-     * @param keypair - Root key identity keypair
      * @param encryptedKey - Encrypted root key
+     * @param token - Ephemeral token from API
      * @returns 
      */
     async createEncryptedAccount(username: string, email: string, encryptedKey: EncryptedKey, token: EphemeralToken): Promise<EncryptedAccount> {
