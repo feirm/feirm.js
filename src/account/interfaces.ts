@@ -47,5 +47,6 @@ export {
     Keys,
     EncryptedKey,
     EncryptedAccount,
+    EphemeralToken,
     SignedSessionToken
 }
