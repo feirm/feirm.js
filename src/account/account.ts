@@ -13,8 +13,9 @@ class Account {
      * Generate an account root key
      * @returns {ArrayBuffer}
      */
-    generateRootKey(): Uint8Array {
-        return window.crypto.getRandomValues(new Uint8Array(32));
+    generateRootKey() {
+        const rootKey = window.crypto.getRandomValues(new Uint8Array(32));
+        this.rootKey = rootKey;
     }
 
     /**
