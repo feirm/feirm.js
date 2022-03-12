@@ -10,6 +10,10 @@ class Account {
     private rootKey: Uint8Array;
     private identityKeypair: eddsa.KeyPair;
 
+    constructor(rootKey: Uint8Array) {
+        this.rootKey = rootKey
+    }
+
     /**
      * Generate an account root key
      * @returns {ArrayBuffer}
