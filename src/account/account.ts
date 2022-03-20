@@ -213,7 +213,8 @@ class Account {
      * @param email - Feirm account email address
      * @param encryptedKey - Encrypted root key
      * @param token - Ephemeral token from API
-     * @returns 
+     * @param captchaToken - Token response from hCaptcha
+     * @returns {EncryptedAccount}
      */
     async createEncryptedAccount(username: string, email: string, encryptedKey: EncryptedKey, token: EphemeralToken, captchaToken?: string): Promise<EncryptedAccount> {
         const identityKeypair = await this.getIdentityKeypair();
