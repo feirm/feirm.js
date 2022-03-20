@@ -10,8 +10,10 @@ class Account {
     private rootKey: Uint8Array;
     private identityKeypair: eddsa.KeyPair;
 
-    constructor(rootKey: Uint8Array) {
-        this.rootKey = rootKey
+    constructor(rootKey?: Uint8Array) {
+        if (rootKey) {
+            this.rootKey = rootKey;
+        }
     }
 
     /**
