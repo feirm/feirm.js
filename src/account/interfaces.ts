@@ -21,6 +21,7 @@ interface EncryptedAccount {
     totp?: TOTP;
 
     token?: EphemeralToken;
+    captcha_token?: string;
 }
 
 // Representation of an ephemeral token signature payload

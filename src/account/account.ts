@@ -215,7 +215,7 @@ class Account {
      * @param token - Ephemeral token from API
      * @returns 
      */
-    async createEncryptedAccount(username: string, email: string, encryptedKey: EncryptedKey, token: EphemeralToken): Promise<EncryptedAccount> {
+    async createEncryptedAccount(username: string, email: string, encryptedKey: EncryptedKey, token: EphemeralToken, captchaToken?: string): Promise<EncryptedAccount> {
         const identityKeypair = await this.getIdentityKeypair();
 
         // Sign the provided ephemeral token
@@ -229,7 +229,8 @@ class Account {
             token: {
                 id: token.id,
                 signature: tokenSignature
-            }
+            },
+            captcha_token: captchaToken
         }
 
         return Promise.resolve(encryptedAccount);
