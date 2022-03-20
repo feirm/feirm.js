@@ -12,7 +12,13 @@ interface EncryptedWallet {
 
 interface Token {
   ticker: string;
-  wallet_version: string;
+
+  encrypted_private: {
+    ciphertext: string;
+    iv: string;
+    signature: string;
+  }
+  
   public: {
     xpub?: string;
     address?: string;
