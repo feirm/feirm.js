@@ -1,4 +1,6 @@
-import { entropyToMnemonic, validateMnemonic } from "bip39";
+import { entropyToMnemonic, mnemonicToSeedSync, validateMnemonic } from "bip39";
+import { EthereumBIP44 } from "./ethereum-bip44";
+import { EncryptedWallet, Token } from "./interfaces";
 
 abstract class Wallet {
     private mnemonic: string; // BIP39 mnemonic
@@ -45,8 +47,16 @@ abstract class Wallet {
         // Generate some secure entropy and use it to create a 24 word mnemonic
         const entropy = window.crypto.getRandomValues(new Uint8Array(32));
         const mnemonic = entropyToMnemonic(Buffer.from(entropy));
-        
+
         return mnemonic;
+    }
+
+    /**
+     * Derive a seed from the mnemonic
+     * @returns {Buffer}
+     */
+    getMnemonicSeed(): Buffer {
+        return mnemonicToSeedSync(this.mnemonic);
     }
 }
 
