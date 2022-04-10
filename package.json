@@ -1,7 +1,6 @@
 {
   "name": "feirmjs",
   "version": "0.0.1",
-  "private": true,
   "description": "General purpose library for all Feirm Platform encryption",
   "main": "src/index.ts",
   "scripts": {
